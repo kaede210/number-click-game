@@ -1,0 +1,1559 @@
+<s<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>数字順番クリックゲーム</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      background: #000;
+      color: #fff;
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Noto Sans JP",
+        sans-serif;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      padding: 20px;
+    }
+
+    .screen {
+      width: 100%;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+
+    /* =========================
+       設定画面
+    ========================= */
+
+    #settings-screen {
+      background: #000;
+
+      border: 1px solid #333;
+      border-radius: 20px;
+
+      padding: 35px 25px;
+    }
+
+    h1 {
+      text-align: center;
+
+      font-size: 28px;
+
+      margin: 0 0 10px;
+
+      color: #fff;
+    }
+
+    .description {
+      text-align: center;
+
+      color: #aaa;
+
+      margin-bottom: 35px;
+    }
+
+
+    /* 設定項目 */
+
+    .setting-group {
+      margin-bottom: 30px;
+    }
+
+    .setting-title {
+      display: block;
+
+      font-weight: bold;
+      font-size: 18px;
+
+      margin-bottom: 12px;
+
+      color: #fff;
+    }
+
+
+    /* サイズ選択 */
+
+    .size-buttons {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 10px;
+    }
+
+    .size-button {
+      min-height: 70px;
+
+      border: 2px solid #444;
+
+      background: #111;
+      color: #fff;
+
+      border-radius: 12px;
+
+      cursor: pointer;
+
+      font-size: 17px;
+      font-weight: bold;
+
+      transition: 0.15s;
+    }
+
+    .size-button:hover {
+      border-color: #fff;
+    }
+
+    .size-button.selected {
+      background: #fff;
+      border-color: #fff;
+
+      color: #000;
+    }
+
+    .size-button small {
+      display: block;
+
+      margin-top: 4px;
+
+      font-size: 13px;
+
+      font-weight: normal;
+    }
+
+
+    /* =========================
+       時間スライダー
+    ========================= */
+
+    .time-box {
+      padding: 20px;
+
+      background: #111;
+
+      border: 1px solid #333;
+
+      border-radius: 12px;
+    }
+
+    .time-value {
+      text-align: center;
+
+      font-size: 30px;
+      font-weight: bold;
+
+      color: #fff;
+
+      margin-bottom: 15px;
+    }
+
+    #time-range {
+      width: 100%;
+
+      cursor: pointer;
+
+      accent-color: #1683ff;
+    }
+
+    .range-labels {
+      display: flex;
+
+      justify-content: space-between;
+
+      color: #888;
+
+      font-size: 13px;
+
+      margin-top: 5px;
+    }
+
+
+    /* =========================
+       スタートボタン
+    ========================= */
+
+    .start-button {
+      display: block;
+
+      width: 100%;
+
+      padding: 16px;
+
+      border: none;
+
+      border-radius: 12px;
+
+      background: #fff;
+      color: #000;
+
+      font-size: 19px;
+      font-weight: bold;
+
+      cursor: pointer;
+
+      transition: 0.15s;
+    }
+
+    .start-button:hover {
+      background: #ddd;
+    }
+
+    .start-button:active {
+      transform: scale(0.98);
+    }
+
+
+    /* =========================
+       ゲーム画面
+    ========================= */
+
+    #game-screen {
+      background: #000;
+
+      border: 1px solid #333;
+
+      border-radius: 20px;
+
+      padding: 20px;
+
+      margin-bottom: 15px;
+    }
+
+    .game-header {
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      gap: 10px;
+
+      margin-bottom: 20px;
+    }
+
+    .game-info {
+      display: flex;
+
+      gap: 10px;
+    }
+
+    .info-box {
+      background: #111;
+
+      border: 1px solid #333;
+
+      border-radius: 10px;
+
+      padding: 8px 15px;
+
+      text-align: center;
+
+      min-width: 90px;
+    }
+
+    .info-label {
+      display: block;
+
+      font-size: 12px;
+
+      color: #888;
+
+      margin-bottom: 2px;
+    }
+
+    .info-value {
+      font-size: 20px;
+
+      font-weight: bold;
+
+      color: #fff;
+    }
+
+    #timer.warning {
+      color: #ff4444;
+    }
+
+    .game-setting {
+      color: #888;
+
+      font-size: 14px;
+
+      white-space: nowrap;
+    }
+
+
+    /* =========================
+       数字ボード
+    ========================= */
+
+    #board {
+      display: grid;
+
+      gap: 7px;
+
+      width: min(100%, 520px);
+
+      margin: auto;
+    }
+
+    .number-button {
+      aspect-ratio: 1;
+
+      border: 1px solid #444;
+
+      border-radius: 9px;
+
+      background: #111;
+
+      color: #fff;
+
+      font-size:
+        clamp(16px, 4vw, 25px);
+
+      font-weight: bold;
+
+      cursor: pointer;
+
+      transition:
+        transform 0.08s,
+        background 0.1s;
+
+      touch-action: manipulation;
+    }
+
+    .number-button:hover {
+      background: #222;
+
+      border-color: #777;
+    }
+
+    .number-button:active {
+      transform: scale(0.94);
+    }
+
+    .number-button.done {
+      background: #333;
+
+      color: #777;
+
+      border-color: #333;
+
+      cursor: default;
+    }
+
+    .number-button.wrong {
+      background: #500;
+
+      color: #fff;
+
+      border-color: #f00;
+    }
+
+
+    /* =========================
+       残り時間バー
+    ========================= */
+
+    #time-bar-container {
+      position: fixed;
+
+      left: 0;
+      bottom: 0;
+
+      width: 100%;
+
+      height: 8px;
+
+      background: #222;
+
+      z-index: 1000;
+    }
+
+    #time-bar {
+      width: 100%;
+      height: 100%;
+
+      background: #1683ff;
+
+      transition:
+        width 0.05s linear;
+    }
+
+
+    /* =========================
+       結果画面
+    ========================= */
+
+    #result-screen {
+      background: #000;
+
+      border: 1px solid #333;
+
+      border-radius: 20px;
+
+      padding: 50px 25px;
+
+      text-align: center;
+    }
+
+    #result-title {
+      font-size: 42px;
+
+      margin: 0 0 15px;
+
+      color: #fff;
+    }
+
+    #result-message {
+      color: #aaa;
+
+      margin-bottom: 30px;
+
+      line-height: 1.7;
+    }
+
+    .result-buttons {
+      display: flex;
+
+      justify-content: center;
+
+      gap: 10px;
+
+      flex-wrap: wrap;
+    }
+
+    .result-button {
+      border: none;
+
+      border-radius: 10px;
+
+      padding: 13px 25px;
+
+      font-size: 16px;
+
+      font-weight: bold;
+
+      cursor: pointer;
+    }
+
+    .again-button {
+      background: #fff;
+
+      color: #000;
+    }
+
+    .back-button {
+      background: #222;
+
+      color: #fff;
+
+      border: 1px solid #444;
+    }
+
+    .again-button:hover {
+      background: #ddd;
+    }
+
+    .back-button:hover {
+      background: #333;
+    }
+
+
+    /* =========================
+       スマホ
+    ========================= */
+
+    @media (max-width: 500px) {
+
+      body {
+        align-items: flex-start;
+      }
+
+      .container {
+        padding: 10px;
+
+        margin-top: 20px;
+      }
+
+      #settings-screen,
+      #game-screen,
+      #result-screen {
+        border-radius: 15px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .game-header {
+        align-items: flex-start;
+      }
+
+      .game-info {
+        gap: 5px;
+      }
+
+      .info-box {
+        min-width: 75px;
+
+        padding: 7px 9px;
+      }
+
+      .info-value {
+        font-size: 18px;
+      }
+
+      .game-setting {
+        font-size: 12px;
+      }
+
+      #board {
+        gap: 4px;
+      }
+
+      .number-button {
+        border-radius: 6px;
+      }
+    }
+
+  </style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+  <!-- =========================
+       設定画面
+  ========================== -->
+
+  <section
+    id="settings-screen"
+    class="screen"
+  >
+
+    <h1>
+      数字順番クリックゲーム
+    </h1>
+
+    <p class="description">
+      数字を1から順番にクリックしてください
+    </p>
+
+
+    <!-- サイズ -->
+
+    <div class="setting-group">
+
+      <span class="setting-title">
+        サイズ
+      </span>
+
+      <div class="size-buttons">
+
+        <button
+          type="button"
+          class="size-button selected"
+          data-size="4"
+        >
+          4 × 4
+
+          <small>
+            16個
+          </small>
+        </button>
+
+
+        <button
+          type="button"
+          class="size-button"
+          data-size="5"
+        >
+          5 × 5
+
+          <small>
+            25個
+          </small>
+        </button>
+
+
+        <button
+          type="button"
+          class="size-button"
+          data-size="6"
+        >
+          6 × 6
+
+          <small>
+            36個
+          </small>
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- 制限時間 -->
+
+    <div class="setting-group">
+
+      <span class="setting-title">
+        制限時間
+      </span>
+
+      <div class="time-box">
+
+        <div class="time-value">
+
+          <span id="time-value">
+            30
+          </span>
+
+          秒
+
+        </div>
+
+
+        <input
+          id="time-range"
+          type="range"
+          min="5"
+          max="60"
+          step="5"
+          value="30"
+        >
+
+
+        <div class="range-labels">
+
+          <span>
+            5秒
+          </span>
+
+          <span>
+            60秒
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- スタート -->
+
+    <button
+      id="start-button"
+      class="start-button"
+      type="button"
+    >
+      ゲームスタート
+    </button>
+
+  </section>
+
+
+
+  <!-- =========================
+       ゲーム画面
+  ========================== -->
+
+  <section
+    id="game-screen"
+    class="screen"
+    hidden
+  >
+
+    <div class="game-header">
+
+
+      <div class="game-info">
+
+
+        <div class="info-box">
+
+          <span class="info-label">
+            次の数字
+          </span>
+
+          <span
+            id="next-number"
+            class="info-value"
+          >
+            1
+          </span>
+
+        </div>
+
+
+        <div class="info-box">
+
+          <span class="info-label">
+            残り時間
+          </span>
+
+          <span
+            id="timer"
+            class="info-value"
+          >
+            30.0秒
+          </span>
+
+        </div>
+
+
+      </div>
+
+
+      <div
+        id="game-setting"
+        class="game-setting"
+      >
+        4×4 / 30秒
+      </div>
+
+    </div>
+
+
+    <!-- 数字 -->
+
+    <div id="board"></div>
+
+  </section>
+
+
+
+  <!-- =========================
+       結果画面
+  ========================== -->
+
+  <section
+    id="result-screen"
+    class="screen"
+    hidden
+  >
+
+    <h2 id="result-title">
+      CLEAR!
+    </h2>
+
+
+    <p id="result-message">
+    </p>
+
+
+    <div class="result-buttons">
+
+
+      <button
+        id="again-button"
+        class="result-button again-button"
+        type="button"
+      >
+        もう一度プレイ
+      </button>
+
+
+      <button
+        id="back-button"
+        class="result-button back-button"
+        type="button"
+      >
+        設定に戻る
+      </button>
+
+
+    </div>
+
+  </section>
+
+</div>
+
+
+
+<!-- =========================
+     残り時間バー
+========================== -->
+
+<div id="time-bar-container">
+
+  <div id="time-bar"></div>
+
+</div>
+
+
+
+<script>
+
+
+  /* =========================
+     ゲーム設定
+  ========================== */
+
+  let selectedSize = 4;
+
+  let selectedTime = 30;
+
+  let currentNumber = 1;
+
+  let remainingTime = 30;
+
+  let timerId = null;
+
+  let gameRunning = false;
+
+  let gameStartTime = 0;
+
+
+
+  /* =========================
+     DOM
+  ========================== */
+
+  const settingsScreen =
+    document.getElementById(
+      "settings-screen"
+    );
+
+
+  const gameScreen =
+    document.getElementById(
+      "game-screen"
+    );
+
+
+  const resultScreen =
+    document.getElementById(
+      "result-screen"
+    );
+
+
+  const sizeButtons =
+    document.querySelectorAll(
+      ".size-button"
+    );
+
+
+  const timeRange =
+    document.getElementById(
+      "time-range"
+    );
+
+
+  const timeValue =
+    document.getElementById(
+      "time-value"
+    );
+
+
+  const startButton =
+    document.getElementById(
+      "start-button"
+    );
+
+
+  const board =
+    document.getElementById(
+      "board"
+    );
+
+
+  const nextNumber =
+    document.getElementById(
+      "next-number"
+    );
+
+
+  const timer =
+    document.getElementById(
+      "timer"
+    );
+
+
+  const gameSetting =
+    document.getElementById(
+      "game-setting"
+    );
+
+
+  const resultTitle =
+    document.getElementById(
+      "result-title"
+    );
+
+
+  const resultMessage =
+    document.getElementById(
+      "result-message"
+    );
+
+
+  const againButton =
+    document.getElementById(
+      "again-button"
+    );
+
+
+  const backButton =
+    document.getElementById(
+      "back-button"
+    );
+
+
+  const timeBar =
+    document.getElementById(
+      "time-bar"
+    );
+
+
+
+  /* =========================
+     画面切り替え
+  ========================== */
+
+  function showScreen(screen) {
+
+    settingsScreen.hidden = true;
+
+    gameScreen.hidden = true;
+
+    resultScreen.hidden = true;
+
+    screen.hidden = false;
+
+  }
+
+
+
+  /* =========================
+     サイズ選択
+  ========================== */
+
+  sizeButtons.forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        selectedSize =
+          Number(
+            button.dataset.size
+          );
+
+
+        sizeButtons.forEach(btn => {
+
+          btn.classList.remove(
+            "selected"
+          );
+
+        });
+
+
+        button.classList.add(
+          "selected"
+        );
+
+      }
+    );
+
+  });
+
+
+
+  /* =========================
+     時間選択
+  ========================== */
+
+  timeRange.addEventListener(
+    "input",
+    () => {
+
+      selectedTime =
+        Number(
+          timeRange.value
+        );
+
+
+      timeValue.textContent =
+        selectedTime;
+
+    }
+  );
+
+
+
+  /* =========================
+     配列シャッフル
+  ========================== */
+
+  function shuffle(array) {
+
+    for (
+      let i = array.length - 1;
+      i > 0;
+      i--
+    ) {
+
+      const j =
+        Math.floor(
+          Math.random() *
+          (i + 1)
+        );
+
+
+      [
+        array[i],
+        array[j]
+      ] =
+      [
+        array[j],
+        array[i]
+      ];
+
+    }
+
+
+    return array;
+
+  }
+
+
+
+  /* =========================
+     ゲーム盤作成
+  ========================== */
+
+  function createBoard() {
+
+    const total =
+      selectedSize *
+      selectedSize;
+
+
+    board.innerHTML = "";
+
+
+    board.style.gridTemplateColumns =
+      `repeat(${selectedSize}, 1fr)`;
+
+
+    const numbers =
+      Array.from(
+        {
+          length: total
+        },
+        (_, index) =>
+          index + 1
+      );
+
+
+    shuffle(numbers);
+
+
+    numbers.forEach(number => {
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+
+      button.type =
+        "button";
+
+
+      button.className =
+        "number-button";
+
+
+      button.textContent =
+        number;
+
+
+      button.dataset.number =
+        number;
+
+
+      board.appendChild(
+        button
+      );
+
+    });
+
+  }
+
+
+
+  /* =========================
+     タイマー更新
+  ========================== */
+
+  function updateTimer() {
+
+    timer.textContent =
+      remainingTime.toFixed(1)
+      + "秒";
+
+
+    /* 残り5秒で数字を赤くする */
+
+    if (
+      remainingTime <= 5
+    ) {
+
+      timer.classList.add(
+        "warning"
+      );
+
+    } else {
+
+      timer.classList.remove(
+        "warning"
+      );
+
+    }
+
+
+    /* =====================
+       青い時間バー
+    ====================== */
+
+    const percentage =
+      (
+        remainingTime /
+        selectedTime
+      ) * 100;
+
+
+    timeBar.style.width =
+      percentage + "%";
+
+  }
+
+
+
+  /* =========================
+     タイマー停止
+  ========================== */
+
+  function stopTimer() {
+
+    if (
+      timerId !== null
+    ) {
+
+      clearInterval(
+        timerId
+      );
+
+      timerId = null;
+
+    }
+
+  }
+
+
+
+  /* =========================
+     ゲーム開始
+  ========================== */
+
+  function startGame() {
+
+    stopTimer();
+
+
+    currentNumber = 1;
+
+
+    remainingTime =
+      selectedTime;
+
+
+    gameRunning = true;
+
+
+    gameStartTime =
+      performance.now();
+
+
+    nextNumber.textContent =
+      currentNumber;
+
+
+    gameSetting.textContent =
+      `${selectedSize}×${selectedSize} / ${selectedTime}秒`;
+
+
+    /* 時間バーを100%に戻す */
+
+    timeBar.style.width =
+      "100%";
+
+
+    updateTimer();
+
+
+    createBoard();
+
+
+    showScreen(
+      gameScreen
+    );
+
+
+    timerId =
+      setInterval(
+        () => {
+
+
+          const elapsed =
+            (
+              performance.now()
+              - gameStartTime
+            ) / 1000;
+
+
+          remainingTime =
+            Math.max(
+              0,
+              selectedTime -
+              elapsed
+            );
+
+
+          updateTimer();
+
+
+          if (
+            remainingTime <= 0
+          ) {
+
+            gameOver(
+              "time"
+            );
+
+          }
+
+        },
+        50
+      );
+
+  }
+
+
+
+  /* =========================
+     ゲームオーバー
+  ========================== */
+
+  function gameOver(reason) {
+
+    if (
+      !gameRunning
+    ) {
+
+      return;
+
+    }
+
+
+    gameRunning = false;
+
+
+    stopTimer();
+
+
+    /* バーを0%にする */
+
+    if (
+      reason === "time"
+    ) {
+
+      timeBar.style.width =
+        "0%";
+
+    }
+
+
+    if (
+      reason === "wrong"
+    ) {
+
+      resultTitle.textContent =
+        "GAME OVER";
+
+
+      resultMessage.textContent =
+        "順番を間違えてしまいました。";
+
+    } else {
+
+      resultTitle.textContent =
+        "TIME UP!";
+
+
+      resultMessage.textContent =
+        "時間切れです。";
+
+    }
+
+
+    showScreen(
+      resultScreen
+    );
+
+  }
+
+
+
+  /* =========================
+     ゲームクリア
+  ========================== */
+
+  function gameClear() {
+
+    gameRunning = false;
+
+
+    stopTimer();
+
+
+    resultTitle.textContent =
+      "🎉 CLEAR!";
+
+
+    resultMessage.textContent =
+      `すべての数字をクリアしました！
+       残り時間：${remainingTime.toFixed(1)}秒`;
+
+
+    showScreen(
+      resultScreen
+    );
+
+  }
+
+
+
+  /* =========================
+     数字クリック
+  ========================== */
+
+  board.addEventListener(
+    "click",
+    event => {
+
+
+      if (
+        !gameRunning
+      ) {
+
+        return;
+
+      }
+
+
+      const button =
+        event.target.closest(
+          ".number-button"
+        );
+
+
+      if (!button) {
+
+        return;
+
+      }
+
+
+      const number =
+        Number(
+          button.dataset.number
+        );
+
+
+      /* =====================
+         間違い
+      ====================== */
+
+      if (
+        number !== currentNumber
+      ) {
+
+        button.classList.add(
+          "wrong"
+        );
+
+
+        gameOver(
+          "wrong"
+        );
+
+
+        return;
+
+      }
+
+
+      /* =====================
+         正解
+      ====================== */
+
+      button.classList.add(
+        "done"
+      );
+
+
+      button.disabled = true;
+
+
+      const total =
+        selectedSize *
+        selectedSize;
+
+
+      /* 最後の数字 */
+
+      if (
+        currentNumber === total
+      ) {
+
+
+        remainingTime =
+          Math.max(
+            0,
+
+            selectedTime -
+            (
+              performance.now()
+              - gameStartTime
+            ) / 1000
+          );
+
+
+        updateTimer();
+
+
+        gameClear();
+
+
+        return;
+
+      }
+
+
+      currentNumber++;
+
+
+      nextNumber.textContent =
+        currentNumber;
+
+    }
+  );
+
+
+
+  /* =========================
+     スタートボタン
+  ========================== */
+
+  startButton.addEventListener(
+    "click",
+    () => {
+
+      startGame();
+
+    }
+  );
+
+
+
+  /* =========================
+     もう一度プレイ
+  ========================== */
+
+  againButton.addEventListener(
+    "click",
+    () => {
+
+      startGame();
+
+    }
+  );
+
+
+
+  /* =========================
+     設定に戻る
+  ========================== */
+
+  backButton.addEventListener(
+    "click",
+    () => {
+
+      gameRunning = false;
+
+      stopTimer();
+
+
+      /* バーを100%に戻す */
+
+      timeBar.style.width =
+        "100%";
+
+
+      showScreen(
+        settingsScreen
+      );
+
+    }
+  );
+
+
+
+  /* =========================
+     初期設定
+  ========================== */
+
+  timeValue.textContent =
+    selectedTime;
+
+
+  timeBar.style.width =
+    "100%";
+
+
+</script>
+
+</body>
+</html>
