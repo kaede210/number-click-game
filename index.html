@@ -310,68 +310,34 @@
        数字ボード
     ========================= */
 
-    #board {
-      display: grid;
+   #board {
+  display: grid;
+  gap: 8px;
+  width: min(100%, 570px);
+  margin: auto;
+}
 
-      gap: 7px;
+.number-button {
+  aspect-ratio: 1;
 
-      width: min(100%, 520px);
+  border: 1px solid #444;
+  border-radius: 9px;
 
-      margin: auto;
-    }
+  background: #111;
+  color: #fff;
 
-    .number-button {
-      aspect-ratio: 1;
+  font-size: clamp(18px, 4vw, 28px);
+  font-weight: bold;
 
-      border: 1px solid #444;
+  cursor: pointer;
 
-      border-radius: 9px;
+  transition:
+    transform 0.08s,
+    background 0.1s;
 
-      background: #111;
+  touch-action: manipulation;
+}
 
-      color: #fff;
-
-      font-size:
-        clamp(16px, 4vw, 25px);
-
-      font-weight: bold;
-
-      cursor: pointer;
-
-      transition:
-        transform 0.08s,
-        background 0.1s;
-
-      touch-action: manipulation;
-    }
-
-    .number-button:hover {
-      background: #222;
-
-      border-color: #777;
-    }
-
-    .number-button:active {
-      transform: scale(0.94);
-    }
-
-    .number-button.done {
-      background: #333;
-
-      color: #777;
-
-      border-color: #333;
-
-      cursor: default;
-    }
-
-    .number-button.wrong {
-      background: #500;
-
-      color: #fff;
-
-      border-color: #f00;
-    }
 
 
     /* =========================
