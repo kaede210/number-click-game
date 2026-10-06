@@ -232,16 +232,12 @@
     ========================= */
 
     #game-screen {
-      background: #000;
-
-      border: 1px solid #333;
-
-      border-radius: 20px;
-
-      padding: 20px;
-
-      margin-bottom: 15px;
-    }
+  background: #000;
+  border: none;
+  border-radius: 0;
+  padding: 10px;
+  margin: 0;
+}
 
     .game-header {
       display: flex;
@@ -310,12 +306,14 @@
        数字ボード
     ========================= */
 
-   #board {
+#board {
   display: grid;
   gap: 8px;
-  width: min(100%, 570px);
+  width: 100%;
+  max-width: 650px;
   margin: auto;
 }
+
 
 .number-button {
   aspect-ratio: 1;
